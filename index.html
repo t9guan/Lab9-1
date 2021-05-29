@@ -55,18 +55,111 @@
     <button>Trigger a Global Error</button>
   </section>
 
+  <script src="https://cdn.trackjs.com/agent/v3/latest/t.js"></script>
   <script>
+    window.TrackJS && TrackJS.install({ 
+      token: "46e4e8abf50f44f7be374420b2c0a1be"
+      // for more configuration options, see https://docs.trackjs.com
+    });
+  </script>
+                        
+  <script>
+    class ConversionError extends Error{
+      constructor(message){
+        super(message);
+        this.name = 'Conversion Error';
+      }
+    }
+
+    TrackJS.track('Testing TrackJS!');
+                        
     let calculateBtn = document.querySelector('#calculate');
     calculateBtn.addEventListener('click', () => {
       let output = document.querySelector('output');
-      let firstNum = document.querySelector('#first-num').value;
-      let secondNum = document.querySelector('#second-num').value;
+      let firstNum;
+      let secondNum;
       let operator = document.querySelector('#operator').value;
-      output.innerHTML = eval(`${firstNum} ${operator} ${secondNum}`);
+      try {
+        firstNum = document.querySelector('#first-num').value;
+        secondNum = document.querySelector('#second-num').value;
+        if((firstNum != '' || secondNum !='') && (!Number.isInteger(firstNum) || !Number.isInteger(secondNum))){
+          throw new ConversionError('not a number');
+        }
+        output.innerHTML = eval(`${firstNum} ${operator} ${secondNum}`);
+      } catch (error) {
+        if(firstNum == ''){
+          firstNum = 0;
+        }
+        if(secondNum == ''){
+          secondNum = 0;
+        }
+        output.innerHTML = eval(`${firstNum} ${operator} ${secondNum}`);
+        if(window.onerror){
+          console.log('onerror');
+          console.log(window.onerror);
+        }
+        console.log(error);
+      }
     });
 
     let errorBtns = Array.from(document.querySelectorAll('#error-btns > button'));
     // TODO - Make buttons functional
+    for(let i=0; i<errorBtns.length; i++){
+      let buttonType = errorBtns[i].innerHTML;
+      errorBtns[i].addEventListener('click', ()=>{
+        switch (buttonType) {
+          case 'Console Log Demo':
+            console.log('console log demo')
+            break;
+          case 'Console Error Demo':
+            console.error('console log error');
+            break;
+          case 'Console Dir':
+            console.dir(document.head);
+            break;
+          case 'Console dirxml':
+            console.dirxml(document);
+            break;
+          case 'Console Group Start':
+            console.group('thing');
+            break;
+          case 'Console Group End':
+            console.groupEnd('thing');
+            break;
+          case 'Console Table':
+            console.table([
+              {
+                name: 'Software Engineering',
+                num: 110
+              },
+              {
+                name: 'Programming Languages',
+                num: 130
+              },
+              {
+                name: 'Advanced Software Engineering',
+                num: 112
+              }
+            ]);
+            break;
+          case 'Start Timer': 
+            console.log('timer started!');
+            console.time('Run Time');
+            break;
+          case 'End Timer': 
+            console.log('timer ended!');
+            console.timeEnd('Run Time');
+            break;
+          case 'Console Trace': 
+            console.trace();
+            break;
+          case 'Trigger a Global Error':
+            console.warn('boom');
+          default:
+            break;
+        }
+      });
+    }
   </script>
 </body>
 </html>
